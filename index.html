@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DesignCafe – Lead: Hi</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 13px; background: #f3f2f2; color: #181818; }
+  a { color: #0070d2; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .topnav { background: #032d60; height: 48px; display: flex; align-items: center; padding: 0 16px; gap: 12px; position: sticky; top: 0; z-index: 200; }
+  .topnav .app-name { color: #fff; font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 6px; }
+  .topnav .search-bar { flex: 1; max-width: 440px; margin: 0 auto; background: #fff; border-radius: 4px; display: flex; align-items: center; padding: 0 10px; height: 30px; gap: 6px; font-size: 13px; color: #888; }
+  .topnav .nav-icons { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+  .topnav .nav-icons span { color: #b0c4de; font-size: 16px; cursor: pointer; }
+
+  .tabbar { background: #032d60; display: flex; align-items: center; padding: 0 16px; gap: 2px; border-top: 1px solid #0a3e7e; overflow-x: auto; }
+  .tabbar .tab { color: #b0c4de; font-size: 12px; padding: 6px 14px; border-radius: 4px 4px 0 0; cursor: pointer; white-space: nowrap; display: flex; align-items: center; gap: 5px; }
+  .tabbar .tab.active { background: #f3f2f2; color: #032d60; font-weight: 600; }
+  .tabbar .tab .close { font-size: 10px; opacity: 0.6; }
+
+  .lead-header { background: #fff; border-bottom: 1px solid #ddd; padding: 10px 20px 0; }
+  .lead-header .lead-type { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; }
+  .lead-header .lead-type .badge { background: #3e89f7; color: #fff; border-radius: 50%; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; }
+  .lead-header .lead-name { font-size: 22px; font-weight: 700; margin: 2px 0 4px; }
+  .lead-header .lead-meta { display: flex; align-items: center; gap: 20px; font-size: 12px; color: #555; flex-wrap: wrap; }
+  .lead-header .lead-meta .phone { color: #0070d2; font-weight: 500; }
+  .lead-header .lead-actions { display: flex; align-items: center; gap: 8px; margin-top: 8px; padding-bottom: 8px; }
+  .btn { cursor: pointer; border: none; border-radius: 4px; padding: 6px 14px; font-size: 13px; font-weight: 600; }
+  .btn-outline { background: #fff; border: 1px solid #ddd; color: #333; }
+  .btn-primary { background: #0070d2; color: #fff; }
+  .btn-primary:hover { background: #005fb2; }
+
+  .stage-bar { background: #fff; border-bottom: 1px solid #ddd; padding: 8px 20px; display: flex; align-items: center; overflow-x: auto; }
+  .stage-step { display: flex; align-items: center; font-size: 12px; font-weight: 500; color: #555; }
+  .stage-step .label { padding: 5px 18px 5px 26px; background: #f3f2f2; clip-path: polygon(0 0,calc(100% - 12px) 0,100% 50%,calc(100% - 12px) 100%,0 100%,12px 50%); white-space: nowrap; min-width: 100px; text-align: center; }
+  .stage-step:first-child .label { clip-path: polygon(0 0,calc(100% - 12px) 0,100% 50%,calc(100% - 12px) 100%,0 100%); }
+  .stage-step.active .label { background: #032d60; color: #fff; }
+  .stage-step.done .label { background: #2e844a; color: #fff; }
+  .stage-bar .mark-complete { margin-left: auto; background: #0070d2; color: #fff; border: none; border-radius: 4px; padding: 6px 14px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+
+  .body-wrap { display: grid; grid-template-columns: 1fr 340px; gap: 12px; padding: 12px 16px; max-width: 1400px; }
+
+  .key-fields { background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 10px 16px 14px; margin-bottom: 12px; }
+  .key-fields .kf-header { display: flex; justify-content: space-between; font-size: 11px; color: #0070d2; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; }
+  .key-fields .kf-row { display: grid; grid-template-columns: 160px 1fr 16px; align-items: center; padding: 4px 0; border-bottom: 1px solid #f0f0f0; font-size: 12px; }
+  .key-fields .kf-label { color: #555; }
+
+  .meeting-row { background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 10px 16px; display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+  .meeting-row .field-group { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 160px; }
+  .meeting-row .field-group label { font-size: 11px; color: #555; font-weight: 600; }
+  .meeting-row .field-group label .req { color: #c23934; }
+  .meeting-row select, .meeting-row input[type="datetime-local"] { border: 1px solid #ddd; border-radius: 4px; padding: 5px 8px; font-size: 12px; background: #fff; height: 32px; width: 100%; }
+  .meeting-row .row-actions { display: flex; gap: 8px; }
+
+  .pincode-input { border: 1px solid #ddd; border-radius: 4px; padding: 4px 8px; font-size: 12px; width: 120px; height: 28px; letter-spacing: 1px; outline: none; transition: border-color 0.15s; }
+  .pincode-input:focus { border-color: #0070d2; box-shadow: 0 0 0 3px rgba(0,112,210,0.12); }
+  .pincode-check-btn { background: #0070d2; color: #fff; border: none; border-radius: 4px; padding: 0 10px; height: 28px; font-size: 11px; font-weight: 600; cursor: pointer; transition: background 0.15s; white-space: nowrap; }
+  .pincode-check-btn:hover { background: #005fb2; }
+  .pincode-check-btn:disabled { background: #aac5e4; cursor: not-allowed; }
+
+  .pincode-result { border-radius: 6px; padding: 12px 14px; display: none; font-size: 12px; border: 1px solid; margin-top: 8px; }
+  .pincode-result.serviceable     { background: #f0faf4; border-color: #2e844a; color: #1a5c30; }
+  .pincode-result.extra-charges   { background: #fffbf0; border-color: #e4a000; color: #7a4f00; }
+  .pincode-result.not-serviceable { background: #fff5f5; border-color: #c23934; color: #8a1b17; }
+  .pincode-result.loading         { background: #f0f7ff; border-color: #0070d2; color: #0070d2; }
+  .pincode-result .result-header  { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+  .pincode-result .result-grid    { display: grid; grid-template-columns: 130px 1fr; gap: 4px 8px; margin-top: 10px; }
+  .pincode-result .rg-label       { color: #555; font-size: 11px; font-weight: 600; text-transform: uppercase; padding-top: 2px; }
+  .pincode-result .rg-val         { color: #181818; font-weight: 500; }
+
+  .ok-badge     { display:inline-block; background:#2e844a; color:#fff; font-size:10px; font-weight:700; padding:2px 8px; border-radius:10px; margin-left:6px; }
+  .charge-badge { display:inline-block; background:#e4a000; color:#fff; font-size:10px; font-weight:700; padding:2px 8px; border-radius:10px; margin-left:6px; }
+  .no-badge     { display:inline-block; background:#c23934; color:#fff; font-size:10px; font-weight:700; padding:2px 8px; border-radius:10px; margin-left:6px; }
+
+  .section-tabs { background: #fff; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; }
+  .section-tabs .tab-nav { display: flex; border-bottom: 2px solid #ddd; overflow-x: auto; }
+  .section-tabs .tab-nav .tn-tab { padding: 8px 14px; font-size: 12px; font-weight: 600; color: #555; cursor: pointer; white-space: nowrap; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+  .section-tabs .tab-nav .tn-tab.active { color: #0070d2; border-bottom-color: #0070d2; }
+  .section-tabs .tab-body { padding: 14px 16px; }
+
+  .details-section { margin-bottom: 16px; }
+  .details-section .ds-title { font-size: 12px; font-weight: 700; color: #333; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .details-section .ds-title .chevron { font-size: 10px; color: #888; }
+  .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+  .details-grid .df-row { display: grid; grid-template-columns: 150px 1fr 18px; align-items: start; padding: 5px 0; border-bottom: 1px solid #f0f0f0; font-size: 12px; gap: 4px; }
+  .details-grid .df-label { color: #555; font-size: 11px; }
+  .details-grid .df-edit { color: #0070d2; cursor: pointer; font-size: 11px; }
+  .full-width-row { grid-column: 1 / -1; }
+
+  .sidebar { display: flex; flex-direction: column; gap: 12px; }
+  .call-summary { background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 10px 14px; }
+  .call-summary h4 { font-size: 12px; font-weight: 700; margin-bottom: 8px; }
+  .call-summary table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .call-summary th { color: #555; font-weight: 600; padding: 3px 6px; text-align: left; border-bottom: 1px solid #eee; }
+  .call-summary td { padding: 4px 6px; color: #181818; }
+  .dup-check { background: #fff5f5; border: 1px solid #e8b0ae; border-radius: 4px; padding: 8px 12px; font-size: 11px; color: #8a1b17; display: flex; align-items: center; gap: 6px; }
+  .activity-panel { background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 10px 14px; }
+  .activity-panel h4 { font-size: 12px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+  .activity-item { border-bottom: 1px solid #f0f0f0; padding: 6px 0; font-size: 11px; }
+  .activity-item .ai-title { color: #0070d2; font-weight: 600; margin-bottom: 2px; }
+  .activity-item .ai-meta { color: #777; }
+  .activity-item:last-child { border-bottom: none; }
+  .post-box { background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 10px 14px; }
+  .post-box .post-input { display: flex; gap: 6px; align-items: center; margin-top: 6px; }
+  .post-box .post-input input { flex: 1; border: 1px solid #ddd; border-radius: 4px; padding: 6px 10px; font-size: 12px; height: 32px; }
+  .post-box .post-input .share-btn { background: #0070d2; color: #fff; border: none; border-radius: 4px; padding: 0 12px; height: 32px; font-size: 12px; font-weight: 600; cursor: pointer; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner { width: 14px; height: 14px; border: 2px solid rgba(0,112,210,0.3); border-top-color: #0070d2; border-radius: 50%; display: inline-block; animation: spin 0.7s linear infinite; vertical-align: middle; }
+
+  @media (max-width: 960px) { .body-wrap { grid-template-columns: 1fr; } .details-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <div class="app-name">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b0c4de" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    Call Center
+  </div>
+  <div class="search-bar">
+    <svg width="13" height="13" fill="none" stroke="#aaa" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+    Search…
+  </div>
+  <div class="nav-icons"><span>☆</span><span>⊕</span><span>🔔</span><span>❓</span><span>⚙</span></div>
+</div>
+
+<div class="tabbar">
+  <div class="tab">Find Duplicate <span class="close">✕</span></div>
+  <div class="tab">Manoj | Lead <span class="close">✕</span></div>
+  <div class="tab">Sanjay | Lead <span class="close">✕</span></div>
+  <div class="tab active">MOHAMMED RIZWAN A | Lead <span class="close">✕</span></div>
+</div>
+
+<div class="lead-header">
+  <div class="lead-type"><span class="badge">MR</span> Lead</div>
+  <div class="lead-name">MOHAMMED RIZWAN A</div>
+  <div class="lead-meta">
+    <span>📞 <span class="phone">8760317684</span></span>
+    <span>Region: <strong>Unknown</strong></span>
+    <span>Lead Funnel: <strong>YM WhatsApp</strong></span>
+    <span>Brand Category: <strong>—</strong></span>
+  </div>
+  <div class="lead-actions">
+    <button class="btn btn-outline">+ Follow</button>
+    <button class="btn btn-outline">Edit</button>
+    <button class="btn btn-outline">Change Owner</button>
+    <button class="btn btn-outline">Launch Roster</button>
+    <button class="btn btn-outline">▾</button>
+  </div>
+</div>
+
+<div class="stage-bar">
+  <div class="stage-step done"><div class="label">✓</div></div>
+  <div class="stage-step active"><div class="label">Not Connected</div></div>
+  <div class="stage-step"><div class="label">Connected</div></div>
+  <div class="stage-step"><div class="label">Meeting Scheduled</div></div>
+  <div class="stage-step"><div class="label">Converted</div></div>
+  <button class="mark-complete">✓ Mark Lead Stage as Complete</button>
+</div>
+
+<div class="body-wrap">
+  <div>
+    <div class="key-fields">
+      <div class="kf-header"><span>Key Fields</span><a href="#">Edit</a></div>
+      <div class="kf-row"><span class="kf-label">Lead Stage</span><span>Not Connected</span><span style="color:#0070d2;cursor:pointer;font-size:11px;">✏</span></div>
+      <div class="kf-row"><span class="kf-label">Lead Status</span><span>Not Connected</span><span style="color:#0070d2;cursor:pointer;font-size:11px;">✏</span></div>
+      <div class="kf-row"><span class="kf-label">Reason</span><span>Call Disconnected</span><span style="color:#0070d2;cursor:pointer;font-size:11px;">✏</span></div>
+      <div class="kf-row"><span class="kf-label">Follow Up Date/Time</span><span style="color:#aaa;">—</span><span style="color:#0070d2;cursor:pointer;font-size:11px;">✏</span></div>
+    </div>
+
+    <div class="meeting-row">
+      <div class="field-group"><label><span class="req">* </span>Meeting Type</label><select><option>--None--</option></select></div>
+      <div class="field-group"><label><span class="req">* </span>Meeting Venue</label><select><option>--None--</option></select></div>
+      <div class="field-group"><label>Meeting Scheduled Date/Time</label><input type="datetime-local" /></div>
+      <div class="row-actions"><button class="btn btn-outline">Edit</button><button class="btn btn-primary">Save</button></div>
+    </div>
+
+    <div class="section-tabs">
+      <div class="tab-nav">
+        <div class="tn-tab">Activity</div>
+        <div class="tn-tab active">Details</div>
+        <div class="tn-tab">Requirements</div>
+        <div class="tn-tab">Lead History</div>
+        <div class="tn-tab">Files</div>
+        <div class="tn-tab">Notes</div>
+        <div class="tn-tab">Lead Trace</div>
+        <div class="tn-tab">Attachment URL</div>
+        <div class="tn-tab">More ▾</div>
+      </div>
+      <div class="tab-body">
+
+        <div class="details-section">
+          <div class="ds-title"><span class="chevron">▼</span> Personal Information</div>
+          <div class="details-grid">
+            <div class="df-row"><span class="df-label">Name</span><span>MOHAMMED RIZWAN A</span><span class="df-edit">✏</span></div>
+            <div class="df-row"><span class="df-label">Email</span><span><a href="#">8760317684@placeholder.com</a></span><span class="df-edit">✏</span></div>
+            <div class="df-row"><span class="df-label">Country Code</span><span>—</span><span class="df-edit">✏</span></div>
+            <div class="df-row"><span class="df-label">Customer Language Preference</span><span>—</span><span class="df-edit">✏</span></div>
+            <div class="df-row"><span class="df-label">Mobile</span><span><a href="#">📞 8760317684</a></span><span class="df-edit">✏</span></div>
+            <div class="df-row"><span class="df-label">Alternate Contact Number</span><span>—</span><span class="df-edit">✏</span></div>
+            <div class="df-row"><span class="df-label">Phone</span><span>—</span><span class="df-edit">✏</span></div>
+            <div class="df-row"><span class="df-label">Recording URL - Nimbus</span><span>—</span><span class="df-edit">✏</span></div>
+            <!-- ADDRESS -->
+            <div class="df-row full-width-row"><span class="df-label">Address</span><span><a href="#">Unknown India</a></span><span class="df-edit">✏</span></div>
+            <!-- PINCODE — directly below Address -->
+            <div class="df-row full-width-row" style="align-items:start;">
+              <span class="df-label">Customer Pincode ⓘ</span>
+              <span>
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                  <input class="pincode-input" id="pincodeInput" type="text" maxlength="6"
+                    placeholder="e.g. 560001" inputmode="numeric" pattern="[0-9]*"
+                    oninput="this.value=this.value.replace(/\D/g,'')"/>
+                  <button class="pincode-check-btn" id="checkBtn" onclick="checkPincode()">Check Serviceability</button>
+                </div>
+                <div class="pincode-result" id="pincodeResult"></div>
+              </span>
+              <span class="df-edit">✏</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="details-section">
+          <div class="ds-title"><span class="chevron">▼</span> Lead Information</div>
+          <div class="details-grid">
+            <div class="df-row"><span class="df-label">Call Center Agent</span><span>—</span><span class="df-edit">✏</span></div>
+            <div class="df-row"><span class="df-label">Lead Owner</span><span><a href="#">Varun C S</a></span><span class="df-edit">✏</span></div>
+            <div class="df-row"><span class="df-label">Lead Stage</span><span>Not Connected</span><span class="df-edit">✏</span></div>
+            <div class="df-row"><span class="df-label">Follow Up Date/Time</span><span>—</span><span class="df-edit">✏</span></div>
+            <div class="df-row"><span class="df-label">Lead Status</span><span>Not Connected</span><span class="df-edit">✏</span></div>
+            <div class="df-row"><span class="df-label">Re-Contact Date</span><span>—</span><span class="df-edit">✏</span></div>
+            <div class="df-row"><span class="df-label">Reason</span><span>Call Disconnected</span><span class="df-edit">✏</span></div>
+            <div class="df-row"><span class="df-label">Description</span><span>Cx disconnected</span><span class="df-edit">✏</span></div>
+            <div class="df-row"><span class="df-label">Meeting Type</span><span>—</span><span class="df-edit">✏</span></div>
+            <div class="df-row"><span class="df-label">Approx. Budget</span><span>—</span><span class="df-edit">✏</span></div>
+            <div class="df-row full-width-row"><span class="df-label">Meeting Venue</span><span>—</span><span class="df-edit">✏</span></div>
+            <div class="df-row"><span class="df-label">YMUrl</span><span><a href="#" style="font-size:10px;word-break:break-all">https://cloud.yellow.ai/public/messages/…</a></span><span class="df-edit">✏</span></div>
+            <div class="df-row"><span class="df-label">Meeting Scheduled Date/Time</span><span>—</span><span class="df-edit">✏</span></div>
+            <div class="df-row"><span class="df-label">LARR</span><span>○</span><span class="df-edit">✏</span></div>
+          </div>
+        </div>
+
+        <div class="details-section">
+          <div class="ds-title"><span class="chevron">▼</span> Property Details</div>
+          <div class="details-grid">
+            <div class="df-row"><span class="df-label">Property Details List</span><span>—</span><span class="df-edit">✏</span></div>
+            <div class="df-row"><span class="df-label">Property Possession Status</span><span>—</span><span class="df-edit">✏</span></div>
+            <div class="df-row"><span class="df-label">Project Name</span><span>—</span><span class="df-edit">✏</span></div>
+            <div class="df-row"><span class="df-label">Property Possession Date</span><span>—</span><span class="df-edit">✏</span></div>
+          </div>
+        </div>
+
+        <div class="details-section">
+          <div class="ds-title"><span class="chevron">▼</span> Attribution</div>
+          <div class="details-grid">
+            <div class="df-row"><span class="df-label">Channel</span><span>Online</span><span class="df-edit">✏</span></div>
+            <div class="df-row"><span class="df-label">Campaign Source</span><span>Social Media – Paid</span><span class="df-edit">✏</span></div>
+            <div class="df-row"><span class="df-label">Source</span><span>Paid</span><span class="df-edit">✏</span></div>
+            <div class="df-row"><span class="df-label">Lead Source</span><span>Facebook Paid Website</span><span class="df-edit">✏</span></div>
+            <div class="df-row"><span class="df-label">Messaging Source</span><span>WhatsApp</span><span class="df-edit">✏</span></div>
+            <div class="df-row"><span class="df-label">Knew about DesignCafe Because</span><span>—</span><span class="df-edit">✏</span></div>
+          </div>
+        </div>
+
+        <div class="details-section">
+          <div class="ds-title"><span class="chevron">▼</span> System Information</div>
+          <div class="details-grid">
+            <div class="df-row"><span class="df-label">Created By</span><span><a href="#">Faizan</a>, 18/06/2026, 7:38 am</span></div>
+            <div class="df-row"><span class="df-label">Last Modified By</span><span><a href="#">Faizan</a>, 18/06/2026, 7:30 pm</span></div>
+            <div class="df-row"><span class="df-label">Lead Record Type</span><span>DC Call Center</span><span class="df-edit">✏</span></div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:#777;margin-top:4px;">Restrictions Enabled</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <div class="call-summary">
+      <h4>📞 Call Summary</h4>
+      <table>
+        <thead><tr><th></th><th>Attempts</th><th>Connected</th><th>Not Connected</th><th>Last Call Date</th></tr></thead>
+        <tbody>
+          <tr><td><strong>SM Calls</strong></td><td>0</td><td>0</td><td>0</td><td>—</td></tr>
+          <tr><td><strong>Globiva</strong></td><td>8</td><td>2</td><td>6</td><td>2026-06-18</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="dup-check">🔴 We found no potential duplicates of this Lead.</div>
+    <div class="activity-panel">
+      <h4>Activity History (3+) <span style="color:#0070d2;font-size:11px;">▾</span></h4>
+      <div class="activity-item"><div class="ai-title">Outbound Call To Hi</div><div class="ai-meta">Recording URL: — | Create Date: 18/06/2026, 7:30 pm | Duration: 00:00:00</div></div>
+      <div class="activity-item"><div class="ai-title">Outbound Call to Hi: Acefone Missed Call Webhook</div><div class="ai-meta">Create Date: 18/06/2026, 7:30 pm | Duration: 00:00:31</div></div>
+      <div class="activity-item"><div class="ai-title">Outbound Call to Hi</div><div class="ai-meta">Create Date: 18/06/2026, 7:30 pm | Duration: 00:00:31</div></div>
+      <a href="#" style="font-size:11px;display:block;margin-top:6px;color:#0070d2;">View All</a>
+    </div>
+    <div class="post-box">
+      <div style="font-size:12px;font-weight:700;margin-bottom:4px;">Post</div>
+      <div class="post-input"><input type="text" placeholder="Share an update…"/><button class="share-btn">Share</button></div>
+    </div>
+    <div class="activity-panel">
+      <h4>Latest Posts ▾</h4>
+      <div class="activity-item">
+        <div class="ai-title" style="color:#333;">Santhosh S <span style="background:#e8f5ec;color:#2e844a;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:600;">● Lead updated</span></div>
+        <div class="ai-meta">5h ago</div>
+         <div style="font-size:11px;margin-top:2px;">Lead Stage: Not Connected to Connected</div>
+      </div>
+      <div class="activity-item">
+        <div class="ai-title" style="color:#333;">Safad Ps <span style="background:#e8f5ec;color:#2e844a;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:600;">● Lead updated</span></div>
+        <div class="ai-meta">9h ago</div>
+        <div style="font-size:11px;margin-top:2px;">Lead Stage: New to Not Connected</div>
+      </div>
+      <div class="activity-item">
+        <div class="ai-title" style="color:#333;">Faizan<span style="background:#e8f5ec;color:#2e844a;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:600;">● Lead updated</span></div>
+        <div class="ai-meta">11h ago</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// EXPERIENCE CENTRES
+// ═══════════════════════════════════════════════════════
+const EC = [
+  {code:"MGDC",   name:"St. Mark's Road – Bangalore",  manager:"Crystal Bliss Gomes",               lat:12.9741,lng:77.6089,group:"bangalore",region:"Bengaluru"},
+  {code:"WDC",    name:"Whitefield – Bangalore",        manager:"Nikita Chotrani & Ranjitha N",      lat:12.9856,lng:77.7463,group:"bangalore",region:"Bengaluru"},
+  {code:"HSRDC",  name:"HSR Layout – Bangalore",        manager:"Kajol Mishra",                      lat:12.9116,lng:77.6474,group:"bangalore",region:"Bengaluru"},
+  {code:"HEBBAL", name:"Hebbal – Bangalore",            manager:"Manoj Kumar R",                     lat:13.0475,lng:77.5920,group:"bangalore",region:"Bengaluru"},
+  {code:"KDRMYS", name:"Kalidasa Road – Mysore",        manager:"Pramod BS",                         lat:12.3052,lng:76.6551,group:"mysore",   region:"Mysuru"},
+  {code:"HDC",    name:"Gachibowli – Hyderabad",        manager:"Akhilesh Kotha",                    lat:17.4401,lng:78.3489,group:"hyderabad",region:"Hyderabad",ecCode:"GB",address:"50, 1 Platina, Gachibowli-Miyapur Rd, Anjaiah Nagar, Gachibowli, Hyderabad 500032"},
+  {code:"BHHYD",  name:"Banjara Hills – Hyderabad",     manager:"Mohammed Omer Ahmed",               lat:17.4153,lng:78.4384,group:"hyderabad",region:"Hyderabad",ecCode:"BH",address:"3rd Floor, Raichandani Construction Building, Road No. 12, Banjara Hills, Hyderabad 500034"},
+  {code:"DNVIZ",  name:"Vizag",                         manager:"Avinash Ogirala",                   lat:17.7231,lng:83.3124,group:"standard", region:"Vizag",   km:40,address:"2nd Floor, Opp. Hotel Quality Inn Bez Krishna, Diamond Park Junction, Visakhapatnam 530016"},
+  {code:"CDC",    name:"Anna Salai – Chennai",          manager:"Vishal Samdaria",                   lat:13.0636,lng:80.2785,group:"tamilnadu",region:"Chennai", address:"137, Anna Salai, near LIC Building, Chennai 600002"},
+  {code:"OMRDC",  name:"OMR – Chennai",                 manager:"Ameer Sohil",                       lat:12.9295,lng:80.2268,group:"tamilnadu",region:"Chennai", address:"EDIFICE, Plot No.154, Rajiv Gandhi Salai, Thoraipakkam, Chennai 600097"},
+  {code:"RSPCO",  name:"R.S. Puram – Coimbatore",       manager:"Vignesh KS / Ishwarya Subramanian", lat:11.0057,lng:76.9531,group:"tamilnadu",region:"Coimbatore",address:"110-113, 1st Floor, Meena HighRise, R.S. Puram, Coimbatore 641002"},
+  {code:"WLMUM",  name:"Andheri West – Mumbai",         manager:"Nicklesh Vadoliya",                 lat:19.1405,lng:72.8361,group:"mumbai",   region:"Mumbai",  ecCode:"WLMUM",address:"Ground Floor, Vicino Mall, Shop 18-18A, Off New Link Rd, Oshiwara, Andheri West, Mumbai 400102"},
+  {code:"KHMUM",  name:"Kharghar – Navi Mumbai",        manager:"Virat Sarkar",                      lat:19.0474,lng:73.0686,group:"mumbai",   region:"Mumbai",  ecCode:"KHMUM",address:"Shop 3&4, Bhagwati Greens, Plot 6, Central Park Rd, Sector 23, Kharghar, Navi Mumbai 410210"},
+  {code:"TDC",    name:"Thane",                         manager:"Shivam Rainaik",                    lat:19.2403,lng:72.9836,group:"mumbai",   region:"Mumbai",  ecCode:"Thane",address:"Shop 11, Dosti Imperia, Ghodbunder Rd, opposite R-Mall, Manpada, Thane West 400607"},
+  {code:"YERPUN", name:"Yerawada – Pune",               manager:"Raza Murad",                        lat:18.5528,lng:73.8982,group:"standard", region:"Pune",    km:40,address:"Unit 2G04, CREATICITY MALL, opposite Golf Course, off Airport Road, Yerawada, Pune 411006"},
+  {code:"BWPUN",  name:"Balewadi – Pune",               manager:"Suman Sekhar",                      lat:18.5679,lng:73.7870,group:"standard", region:"Pune",    km:40,address:"Shop 24, Amar Tech Park, 25 & 26, Balewadi-Hinjawadi Rd, Patil Nagar, Balewadi, Pune 411045"},
+  {code:"KOLPRI", name:"Primarc Square – Kolkata",      manager:"Avi Ganguly",                       lat:22.5773,lng:88.4296,group:"standard", region:"Kolkata", km:40,address:"6th Floor, Primarc Square, Salt Lake, 1 LA Block, Sector 3, Bidhannagar, Kolkata 700098"},
+  {code:"KOLPS",  name:"Park Street – Kolkata",         manager:"Amit Shaw",                         lat:22.5524,lng:88.3510,group:"standard", region:"Kolkata", km:40,address:"Park Street, Kolkata, West Bengal"},
+  {code:"AHMSV",  name:"Thaltej – Ahmedabad",           manager:"Rishabh Namdev",                    lat:23.0468,lng:72.5218,group:"standard", region:"Ahmedabad",km:40,address:"SF-9, Times Square-2, Near Avalon Hotel, Sindhu Bhavan Marg, Thaltej, Ahmedabad 380054"},
+  {code:"GNRDC",  name:"Radhe Infinity – Gandhinagar",  manager:"Nikhilesh Kumar Pandey",            lat:23.2156,lng:72.6369,group:"standard", region:"Ahmedabad",km:40,address:"Shop 319, 3rd Floor, Radhe Infinity, near Raksha Shakti Circle, Randesan, Gandhinagar 382426"},
+  {code:"GGNDC",  name:"Sector 74 – Gurugram",          manager:"Nida Hasan",                        lat:28.4081,lng:77.0498,group:"standard", region:"Gurgaon/Noida",km:40,address:"Unit R2, M3M Corner Walk, G005, Southern Peripheral Rd, Sector 74, Gurugram 122002"},
+  {code:"NOIDC",  name:"Techzone 4 – Greater Noida",    manager:"Monika Singh",                      lat:28.4744,lng:77.5040,group:"standard", region:"Gurgaon/Noida",km:40,address:"Plot 11, Techzone 4, Amrapali Leisure Valley, Greater Noida, Uttar Pradesh 201318"},
+  {code:"BBSDC",  name:"Baramunda – Bhubaneswar",       manager:"Mansubhjeet Mishra",                lat:20.2715,lng:85.7942,group:"standard", region:"Bhubaneswar",km:40,address:"2nd Floor, M140, Ruchika Market, Baramunda Housing Board Colony, Baramunda, Bhubaneswar 751003"}
+];
+
+const EC_MAP = {};
+EC.forEach(e=>{EC_MAP[e.code]=e;});
+
+// ═══════════════════════════════════════════════════════
+// PINCODE SHEETS — Hyderabad & Mumbai (no API needed)
+// ═══════════════════════════════════════════════════════
+const HYD = {"500030":"GB","500018":"GB","500081":"GB","500085":"GB","500033":"GB","500008":"GB","500028":"GB","500069":"GB","500090":"GB","500031":"GB","500015":"GB","500075":"GB","500084":"GB","500049":"GB","500072":"GB","500089":"GB","502300":"GB","502319":"GB","502324":"GB","502032":"GB","500043":"GB","502325":"GB","500100":"GB","502303":"GB","501401":"GB","500019":"GB","500046":"GB","500107":"GB","500133":"GB","500036":"GB","500032":"GB","500014":"GB","501101":"GB","500044":"BH","500013":"BH","500004":"BH","500020":"BH","500048":"BH","500058":"BH","500064":"BH","500005":"BH","500034":"BH","500027":"BH","500012":"BH","500016":"BH","500003":"BH","500080":"BH","500022":"BH","500024":"BH","500060":"BH","500062":"BH","500053":"BH","500029":"BH","500001":"BH","500006":"BH","500076":"BH","500068":"BH","500025":"BH","500051":"BH","500035":"BH","500002":"BH","500007":"BH","500040":"BH","500079":"BH","500067":"BH","500017":"BH","500071":"BH","500041":"BH","500074":"BH","500059":"BH","500038":"BH","500073":"BH","500063":"BH","500082":"BH","500070":"BH","500057":"BH","500023":"BH","500045":"BH","500094":"BH","500055":"BH","500087":"BH","500102":"BH","500091":"BH","500096":"BH","500037":"BH","500050":"BH","500009":"BH","500052":"BH","500039":"BH","500095":"BH","500086":"BH/GB"};
+
+const MUM = {"400001":"WLMUM","400002":"WLMUM","400003":"WLMUM","400004":"WLMUM","400005":"WLMUM","400006":"WLMUM","400007":"WLMUM","400008":"WLMUM","400009":"WLMUM","400010":"WLMUM","400011":"WLMUM","400012":"WLMUM","400013":"WLMUM","400014":"WLMUM","400015":"WLMUM","400016":"WLMUM","400017":"WLMUM","400018":"WLMUM","400019":"WLMUM","400020":"WLMUM","400021":"WLMUM","400022":"WLMUM","400024":"WLMUM","400025":"WLMUM","400026":"WLMUM","400027":"WLMUM","400028":"WLMUM","400029":"WLMUM","400030":"WLMUM","400031":"WLMUM","400032":"WLMUM","400033":"WLMUM","400034":"WLMUM","400035":"WLMUM","400037":"WLMUM","400042":"WLMUM","400043":"WLMUM","400049":"WLMUM","400050":"WLMUM","400051":"WLMUM","400052":"WLMUM","400053":"WLMUM","400054":"WLMUM","400055":"WLMUM","400056":"WLMUM","400057":"WLMUM","400058":"WLMUM","400059":"WLMUM","400061":"Thane","400063":"WLMUM","400064":"WLMUM","400065":"WLMUM","400066":"WLMUM","400067":"WLMUM","400068":"Thane","400069":"Thane","400070":"Thane","400071":"Thane","400072":"Thane","400074":"Thane","400075":"Thane","400076":"Thane","400077":"Thane","400078":"Thane","400079":"Thane","400080":"Thane","400081":"Thane","400082":"Thane","400083":"Thane","400084":"Thane","400085":"Thane","400086":"Thane","400087":"Thane","400088":"Thane","400089":"Thane","400091":"WLMUM","400092":"WLMUM","400093":"WLMUM","400094":"Thane","400095":"WLMUM","400096":"WLMUM","400097":"WLMUM","400098":"WLMUM","400099":"WLMUM","400101":"WLMUM","400102":"WLMUM","400103":"WLMUM","400104":"WLMUM","400601":"Thane","400602":"Thane","400603":"Thane","400604":"Thane","400605":"Thane","400606":"Thane","400607":"Thane","400608":"Thane","400609":"Thane","400610":"Thane","400611":"Thane","400612":"Thane","400613":"Thane","400615":"Thane","400701":"KHMUM","400702":"KHMUM","400703":"KHMUM","400704":"KHMUM","400705":"KHMUM","400706":"KHMUM","400707":"KHMUM","400708":"KHMUM","400709":"KHMUM","400710":"KHMUM","400614":"KHMUM","410206":"KHMUM","410208":"KHMUM","410210":"KHMUM","410201":"KHMUM","410216":"KHMUM","410209":"KHMUM","421201":"Thane","421202":"Thane","421203":"Thane","421204":"Thane","421301":"Thane","421306":"Thane","421002":"Thane","421004":"Thane","421103":"Thane","401101":"Thane","401105":"Thane","401106":"Thane","401107":"Thane"};
+
+// ═══════════════════════════════════════════════════════
+// STATE → EC GROUP MAPPING  (THE CRITICAL FIX)
+// Any pincode from these states ONLY considers ECs in these groups.
+// This guarantees correct EC assignment regardless of district name spelling.
+// ═══════════════════════════════════════════════════════
+const STATE_GROUP = {
+  // Tamil Nadu → only tamilnadu ECs (Chennai x2, Coimbatore)
+  "Tamil Nadu":       ["tamilnadu"],
+  // Karnataka → bangalore + mysore ECs
+  "Karnataka":        ["bangalore","mysore"],
+  // Telangana → hyderabad ECs
+  "Telangana":        ["hyderabad"],
+  // Andhra Pradesh → vizag + hyderabad (nearest of all AP-adjacent ECs)
+  "Andhra Pradesh":   ["DNVIZ","hyderabad","standard"],
+  // Maharashtra → mumbai + pune ECs
+  "Maharashtra":      ["mumbai","standard"],
+  // Gujarat → ahmedabad ECs
+  "Gujarat":          ["standard"],   // AHMSV, GNRDC
+  // West Bengal → kolkata ECs
+  "West Bengal":      ["standard"],
+  // Odisha → bhubaneswar EC
+  "Odisha":           ["standard"],
+  // Haryana → gurugram EC
+  "Haryana":          ["standard"],
+  // Uttar Pradesh → noida EC + gurugram
+  "Uttar Pradesh":    ["standard"],
+  // Delhi → gurugram + noida
+  "Delhi":            ["standard"],
+  // Punjab → gurugram
+  "Punjab":           ["standard"],
+  // Rajasthan → gurugram / ahmedabad (nearest)
+  "Rajasthan":        ["standard"],
+  // Kerala → coimbatore (tamilnadu group)
+  "Kerala":           ["tamilnadu","standard"],
+  // Madhya Pradesh → nearest standard EC
+  "Madhya Pradesh":   ["standard"],
+  // Bihar → nearest standard EC
+  "Bihar":            ["standard"],
+  // Jharkhand → kolkata / bhubaneswar
+  "Jharkhand":        ["standard"],
+  // Assam & NE → nearest standard EC
+  "Assam":            ["standard"],
+  // All remaining states
+  "Chhattisgarh":     ["standard"],
+  "Himachal Pradesh": ["standard"],
+  "Uttarakhand":      ["standard"],
+  "Goa":              ["standard"],
+  "Manipur":          ["standard"],
+  "Meghalaya":        ["standard"],
+  "Nagaland":         ["standard"],
+  "Tripura":          ["standard"],
+  "Mizoram":          ["standard"],
+  "Sikkim":           ["standard"],
+  "Arunachal Pradesh":["standard"],
+  "Jammu & Kashmir":  ["standard"],
+  "Ladakh":           ["standard"],
+  "Puducherry":       ["tamilnadu"],
+  "Chandigarh":       ["standard"],
+  "Daman and Diu":    ["standard"],
+  "Dadra and Nagar Haveli":["standard"],
+  "Lakshadweep":      ["tamilnadu"],
+  "Andaman and Nicobar Islands":["standard"],
+};
+
+// DISTRICT → precise lat/lng (comprehensive India coverage)
+const DC = {
+  // Karnataka
+  "Bengaluru Urban":[12.9716,77.5946],"Bengaluru Rural":[13.1626,77.5040],"Mysuru":[12.2958,76.6394],
+  "Tumakuru":[13.3409,77.1010],"Kolar":[13.1360,78.1294],"Chikkaballapura":[13.4330,77.7280],
+  "Ramanagara":[12.7157,77.2817],"Mandya":[12.5218,76.8951],"Hassan":[13.0035,76.1004],
+  "Kodagu":[12.3375,75.8069],"Dakshina Kannada":[12.8438,75.2479],"Udupi":[13.3409,74.7421],
+  "Shivamogga":[13.9299,75.5681],"Chikkamagaluru":[13.3153,75.7754],"Davanagere":[14.4644,75.9218],
+  "Chitradurga":[14.2305,76.3980],"Ballari":[15.1394,76.9214],"Vijayanagara":[15.3400,76.4600],
+  "Raichur":[16.2120,77.3439],"Koppal":[15.3509,76.1547],"Gadag":[15.4164,75.6267],
+  "Dharwad":[15.4589,75.0078],"Belagavi":[15.8497,74.4977],"Vijayapura":[16.8302,75.7100],
+  "Bagalkote":[16.1691,75.6615],"Bidar":[17.9104,77.5199],"Kalaburagi":[17.3297,76.8200],
+  "Yadgir":[16.7710,77.1381],"Haveri":[14.7957,75.4000],"Uttara Kannada":[14.9790,74.5770],
+  "Chamarajanagar":[11.9261,76.9437],
+  // Tamil Nadu — complete list including all district name variants
+  "Chennai":[13.0827,80.2707],"Coimbatore":[11.0168,76.9558],"Madurai":[9.9252,78.1198],
+  "Tiruchirappalli":[10.7905,78.7047],"Salem":[11.6643,78.1460],"Tirunelveli":[8.7139,77.7567],
+  "Tiruppur":[11.1085,77.3411],"Vellore":[12.9165,79.1325],"Erode":[11.3410,77.7172],
+  "Thoothukudi":[8.7642,78.1348],"Thoothukudi":[8.7642,78.1348],"Dindigul":[10.3624,77.9695],
+  "Thanjavur":[10.7870,79.1378],"Ranipet":[12.9249,79.3327],"Sivaganga":[9.8477,78.4801],
+  "Virudhunagar":[9.5681,77.9624],"Nagapattinam":[10.7672,79.8449],"Kanyakumari":[8.0883,77.5385],
+  "Krishnagiri":[12.5186,78.2137],"Dharmapuri":[12.1357,78.1602],"Tiruvannamalai":[12.2253,79.0747],
+  "Villupuram":[11.9401,79.4861],"Cuddalore":[11.7480,79.7714],"Ariyalur":[11.1402,79.0760],
+  "Perambalur":[11.2335,78.8799],"Karur":[10.9601,78.0766],"Namakkal":[11.2189,78.1677],
+  "Nilgiris":[11.4916,76.7337],"The Nilgiris":[11.4916,76.7337],"Pudukkottai":[10.3797,78.8201],
+  "Ramanathapuram":[9.3639,78.8395],"Theni":[10.0104,77.4772],"Tiruvallur":[13.1427,79.9082],
+  "Tiruvarur":[10.7717,79.6366],"Chengalpattu":[12.6922,79.9765],"Kallakurichi":[11.7380,78.9628],
+  "Tenkasi":[8.9597,77.3151],"Tirupathur":[12.4960,78.5630],"Mayiladuthurai":[11.1027,79.6510],
+  // CRITICAL additions — districts the API actually returns for TN
+  "Kanchipuram":[12.8342,79.7036],"Kancheepuram":[12.8342,79.7036],
+  "Tiruvanamalai":[12.2253,79.0747],"Tiruvannamalai":[12.2253,79.0747],
+  "Tiruchirapalli":[10.7905,78.7047],"Trichinopoly":[10.7905,78.7047],
+  "Pudukottai":[10.3797,78.8201],"Sivakasi":[9.4506,77.7988],
+  "Tuticorin":[8.7642,78.1348],"Tuticorin":[8.7642,78.1348],
+  "Tirunelveli Kattabo":[8.7139,77.7567],
+  "Nagercoil":[8.1833,77.4167],
+  // Telangana
+  "Hyderabad":[17.3850,78.4867],"Rangareddy":[17.2473,78.3896],"Ranga Reddy":[17.2473,78.3896],
+  "Medchal-Malkajgiri":[17.5450,78.5428],"Medchal Malkajgiri":[17.5450,78.5428],
+  "Sangareddy":[17.6274,77.9938],"Vikarabad":[17.3385,77.9020],
+  "Yadadri Bhuvanagiri":[17.0870,78.9050],"Suryapet":[17.1419,79.6218],
+  "Nalgonda":[17.0575,79.2674],"Mahbubnagar":[16.7376,77.9870],"Mahabubnagar":[16.7376,77.9870],
+  "Wanaparthy":[16.3644,78.0607],"Nagarkurnool":[16.4800,78.3240],
+  "Jogulamba Gadwal":[16.2300,77.8000],"Narayanpet":[16.7466,77.4960],
+  "Nizamabad":[18.6725,78.0941],"Kamareddy":[18.3218,78.3390],
+  "Karimnagar":[18.4386,79.1288],"Jagtial":[18.7953,78.9137],
+  "Peddapalli":[18.6148,79.3763],"Mancherial":[18.8737,79.4559],
+  "Kumuram Bheem":[19.2833,79.3667],"Adilabad":[19.6640,78.5320],
+  "Nirmal":[19.0965,78.3418],"Warangal Urban":[17.9784,79.5941],
+  "Warangal Rural":[17.9800,79.5100],"Hanamkonda":[18.0004,79.5639],
+  "Jangaon":[17.7247,79.1528],"Mahabubabad":[17.5986,80.0019],
+  "Mulugu":[18.1890,80.0980],"Bhadradri Kothagudem":[17.5543,80.6152],
+  "Khammam":[17.2473,80.1514],"Siddipet":[18.1018,78.8520],"Medak":[18.0500,78.2600],
+  // Andhra Pradesh
+  "Visakhapatnam":[17.6868,83.2185],"Vizianagaram":[18.1066,83.3956],"Srikakulam":[18.2949,83.8938],
+  "East Godavari":[17.0005,81.8040],"West Godavari":[16.9174,81.3400],"Krishna":[16.5193,80.6480],
+  "Guntur":[16.3067,80.4365],"Prakasam":[15.3422,79.5500],"Nellore":[14.4426,79.9865],
+  "SPSR Nellore":[14.4426,79.9865],"Kurnool":[15.8281,78.0373],"Kadapa":[14.4674,78.8241],
+  "YSR Kadapa":[14.4674,78.8241],"Anantapur":[14.6819,77.6006],"Chittoor":[13.2172,79.1003],
+  "Tirupati":[13.6288,79.4192],"NTR":[16.5193,80.6480],"Eluru":[16.7100,81.0950],
+  "Bapatla":[15.9100,80.4700],"Kakinada":[16.9891,82.2475],"Nandyal":[15.4780,78.4840],
+  "Palnadu":[16.3100,79.6400],"Anakapalli":[17.6900,83.0000],"Konaseema":[16.8200,81.7800],
+  "Sri Sathya Sai":[14.1600,77.7800],"Alluri Sitharama Raju":[18.0300,82.7000],
+  "Parvathipuram Manyam":[18.7800,83.4200],
+  // Maharashtra
+  "Mumbai City":[18.9388,72.8355],"Mumbai Suburban":[19.1000,72.8800],"Mumbai":[18.9388,72.8355],
+  "Thane":[19.2183,72.9781],"Pune":[18.5204,73.8567],"Nashik":[19.9975,73.7898],
+  "Nagpur":[21.1458,79.0882],"Aurangabad":[19.8762,75.3433],"Chhatrapati Sambhajinagar":[19.8762,75.3433],
+  "Solapur":[17.6805,75.9064],"Kolhapur":[16.7050,74.2433],"Amravati":[20.9320,77.7523],
+  "Nanded":[19.1383,77.3210],"Satara":[17.6805,74.0183],"Raigad":[18.5158,73.1580],
+  "Ratnagiri":[16.9944,73.3001],"Sindhudurg":[16.3494,73.8736],"Sangli":[16.8524,74.5815],
+  "Latur":[18.4088,76.5604],"Osmanabad":[18.1860,76.0400],"Dharashiv":[18.1860,76.0400],
+  "Beed":[18.9891,75.7601],"Jalgaon":[21.0077,75.5626],"Dhule":[20.9042,74.7749],
+  "Nandurbar":[21.3667,74.2333],"Buldhana":[20.5292,76.1842],"Akola":[20.7096,77.0025],
+  "Washim":[20.1119,77.1338],"Yavatmal":[20.3888,78.1204],"Wardha":[20.7453,78.6022],
+  "Gondia":[21.4624,80.1947],"Bhandara":[21.1667,79.6500],"Chandrapur":[19.9615,79.2961],
+  "Gadchiroli":[20.1809,80.0000],"Hingoli":[19.7165,77.1498],"Parbhani":[19.2704,76.7748],
+  "Jalna":[19.8347,75.8816],"Ahmednagar":[19.0952,74.7395],"Ahilyanagar":[19.0952,74.7395],
+  "Navi Mumbai":[19.0330,73.0297],
+  // Gujarat
+  "Ahmedabad":[23.0225,72.5714],"Gandhinagar":[23.2156,72.6369],"Surat":[21.1702,72.8311],
+  "Vadodara":[22.3072,73.1812],"Rajkot":[22.3039,70.8022],"Bhavnagar":[21.7645,72.1519],
+  "Jamnagar":[22.4707,70.0577],"Junagadh":[21.5222,70.4579],"Kutch":[23.7337,69.8597],
+  "Kachchh":[23.7337,69.8597],"Mehsana":[23.5880,72.3693],"Anand":[22.5645,72.9289],
+  "Kheda":[22.7490,72.6850],"Panchmahal":[22.7617,73.5196],"Dahod":[22.8389,74.2557],
+  "Bharuch":[21.7051,72.9959],"Narmada":[21.8726,73.4988],"Tapi":[21.1191,73.4091],
+  "Navsari":[20.9467,72.9520],"Valsad":[20.5992,72.9342],"Dang":[20.7553,73.7236],
+  "Patan":[23.8493,72.1266],"Banaskantha":[24.1750,72.4365],"Sabarkantha":[23.3838,73.0115],
+  "Aravalli":[23.7102,73.1543],"Mahisagar":[23.0894,73.5473],"Chhota Udaipur":[22.3050,74.0100],
+  "Morbi":[22.8173,70.8370],"Surendranagar":[22.7287,71.6482],"Botad":[22.1693,71.6672],
+  "Amreli":[21.6030,71.2213],"Gir Somnath":[20.9000,70.3700],"Porbandar":[21.6417,69.6293],
+  "Devbhoomi Dwarka":[22.2394,68.9673],
+  // West Bengal
+  "Kolkata":[22.5726,88.3639],"Howrah":[22.5958,88.2636],"Hooghly":[22.9000,88.3900],
+  "North 24 Parganas":[22.7200,88.4100],"South 24 Parganas":[22.1543,88.2964],
+  "Nadia":[23.4000,88.5600],"Murshidabad":[24.1760,88.2660],"Bardhaman":[23.2324,87.8615],
+  "Purba Bardhaman":[23.2324,87.8615],"Paschim Bardhaman":[23.5204,87.3119],
+  "Birbhum":[23.8920,87.5360],"Bankura":[23.2324,87.0730],"Purulia":[23.3325,86.3640],
+  "Jhargram":[22.4548,86.9962],"Paschim Medinipur":[22.4204,87.3210],
+  "Purba Medinipur":[22.1600,87.8600],"Malda":[25.0108,88.1400],
+  "Uttar Dinajpur":[26.0450,88.1610],"Dakshin Dinajpur":[25.3300,88.7900],
+  "Jalpaiguri":[26.5450,88.7280],"Darjeeling":[27.0360,88.2627],"Kalimpong":[27.0660,88.4712],
+  "Alipurduar":[26.4900,89.5270],"Cooch Behar":[26.3250,89.4440],
+  // Odisha
+  "Bhubaneswar":[20.2961,85.8245],"Khordha":[20.1824,85.6187],"Khurda":[20.1824,85.6187],
+  "Cuttack":[20.4625,85.8830],"Puri":[19.8135,85.8312],"Jagatsinghpur":[20.2488,86.1718],
+  "Kendrapara":[20.5016,86.4235],"Jajpur":[20.8460,86.3350],"Bhadrak":[21.0544,86.4966],
+  "Balasore":[21.4942,86.9322],"Baleshwar":[21.4942,86.9322],"Mayurbhanj":[21.9500,86.7300],
+  "Keonjhar":[21.6288,85.5818],"Kendujhar":[21.6288,85.5818],"Dhenkanal":[20.6635,85.5988],
+  "Angul":[20.8397,85.1010],"Sambalpur":[21.4669,83.9756],"Bargarh":[21.3351,83.6195],
+  "Jharsuguda":[21.8546,84.0065],"Sundargarh":[22.1165,84.0290],"Deogarh":[21.5345,84.7358],
+  "Bolangir":[20.7008,83.4847],"Subarnapur":[20.8345,83.9008],"Boudh":[20.8464,84.3243],
+  "Nayagarh":[20.1285,85.0955],"Kandhamal":[20.1150,84.2300],"Gajapati":[19.1400,84.0700],
+  "Ganjam":[19.3876,84.5778],"Rayagada":[19.1700,83.4200],"Koraput":[18.8135,82.7111],
+  "Nabarangpur":[19.2300,82.5500],"Malkangiri":[18.3500,81.9000],"Nuapada":[20.6200,82.5500],
+  "Kalahandi":[19.9200,83.1700],
+  // Haryana
+  "Gurugram":[28.4595,77.0266],"Gurgaon":[28.4595,77.0266],"Faridabad":[28.4089,77.3178],
+  "Sonipat":[28.9288,77.0208],"Sonepat":[28.9288,77.0208],"Panipat":[29.3909,76.9635],
+  "Hisar":[29.1492,75.7217],"Rohtak":[28.8955,76.6066],"Ambala":[30.3752,76.7821],
+  "Karnal":[29.6857,76.9905],"Kurukshetra":[29.9695,76.8783],"Yamunanagar":[30.1290,77.2674],
+  "Panchkula":[30.6942,76.8606],"Bhiwani":[28.7930,76.1322],"Charkhi Dadri":[28.5921,76.2681],
+  "Jhajjar":[28.6074,76.6601],"Rewari":[28.1972,76.6179],"Mahendragarh":[28.2793,76.1497],
+  "Nuh":[27.8869,77.0074],"Mewat":[27.8869,77.0074],"Palwal":[28.1448,77.3247],
+  "Sirsa":[29.5338,75.0282],"Fatehabad":[29.5167,75.4549],"Jind":[29.3159,76.3161],
+  "Kaithal":[29.8009,76.3994],
+  // Uttar Pradesh
+  "Gautam Buddha Nagar":[28.5355,77.3910],"Gautam Buddh Nagar":[28.5355,77.3910],
+  "Ghaziabad":[28.6692,77.4538],"Agra":[27.1767,78.0081],"Lucknow":[26.8467,80.9462],
+  "Kanpur Nagar":[26.4499,80.3319],"Kanpur":[26.4499,80.3319],"Varanasi":[25.3176,82.9739],
+  "Prayagraj":[25.4358,81.8463],"Allahabad":[25.4358,81.8463],"Meerut":[28.9845,77.7064],
+  "Bareilly":[28.3670,79.4304],"Aligarh":[27.8974,78.0880],"Moradabad":[28.8386,78.7733],
+  "Saharanpur":[29.9640,77.5460],"Gorakhpur":[26.7606,83.3732],"Mathura":[27.4924,77.6737],
+  "Bulandshahr":[28.4070,77.8499],"Muzaffarnagar":[29.4726,77.7085],"Hapur":[28.7292,77.7767],
+  "Shamli":[29.4500,77.3100],"Baghpat":[28.9459,77.2157],"Rampur":[28.8151,79.0254],
+  "Amroha":[28.9046,78.4670],"J.P. Nagar":[28.9046,78.4670],"Bijnor":[29.3724,78.1366],
+  "Budaun":[28.0376,79.1268],"Badaun":[28.0376,79.1268],"Shahjahanpur":[27.8839,79.9058],
+  "Sitapur":[27.5636,80.6834],"Hardoi":[27.3947,80.1289],"Unnao":[26.5472,80.4894],
+  "Rae Bareli":[26.2304,81.2317],"Raebareli":[26.2304,81.2317],"Lakhimpur Kheri":[27.9491,80.7740],
+  "Bahraich":[27.5750,81.5960],"Shravasti":[27.5100,81.8100],"Balrampur":[27.4274,82.1740],
+  "Gonda":[27.1330,81.9600],"Ayodhya":[26.7922,82.1942],"Faizabad":[26.7922,82.1942],
+  "Ambedkar Nagar":[26.4417,82.5385],"Sultanpur":[26.2648,82.0727],"Basti":[26.7992,82.7212],
+  "Sant Kabir Nagar":[26.7870,83.0550],"Siddharth Nagar":[27.2886,83.1068],
+  "Maharajganj":[27.1288,83.5637],"Kushinagar":[26.7400,83.8890],"Deoria":[26.5024,83.7800],
+  "Azamgarh":[26.0682,83.1836],"Mau":[25.9439,83.5600],"Ballia":[25.7595,84.1477],
+  "Jaunpur":[25.7463,82.6841],"Ghazipur":[25.5785,83.5796],"Chandauli":[25.2634,83.2699],
+  "Mirzapur":[25.1450,82.5690],"Sonbhadra":[24.6837,83.0665],"Hamirpur":[25.9500,80.1500],
+  "Mahoba":[25.2872,79.8700],"Banda":[25.4783,80.3333],"Chitrakoot":[25.2011,80.8967],
+  "Fatehpur":[25.9300,80.8100],"Pratapgarh":[25.8967,81.9867],"Kaushambi":[25.5300,81.3900],
+  "Etawah":[26.7786,79.0250],"Kanpur Dehat":[26.4499,79.8000],"Auraiya":[26.4641,79.5098],
+  "Kannauj":[27.0564,79.9130],"Etah":[27.5591,78.6668],"Mainpuri":[27.2360,79.0240],
+  "Firozabad":[27.1500,78.3949],"Hathras":[27.6051,78.0531],"Kasganj":[27.8102,78.6509],
+  "Farrukhabad":[27.3974,79.5821],"Pilibhit":[28.6319,79.8031],"Jalaun":[25.9244,79.3437],
+  // Delhi
+  "New Delhi":[28.6139,77.2090],"Central Delhi":[28.6139,77.2090],"North Delhi":[28.7041,77.1025],
+  "South Delhi":[28.5244,77.1855],"East Delhi":[28.6280,77.2780],"West Delhi":[28.6519,77.0995],
+  "North West Delhi":[28.7157,77.0670],"South West Delhi":[28.5562,77.0500],
+  "North East Delhi":[28.6900,77.2850],"Shahdara":[28.6720,77.2940],
+  // Rajasthan
+  "Jaipur":[26.9124,75.7873],"Jodhpur":[26.2389,73.0243],"Kota":[25.2138,75.8648],
+  "Ajmer":[26.4499,74.6399],"Bikaner":[28.0229,73.3119],"Udaipur":[24.5854,73.7125],
+  "Bharatpur":[27.2152,77.5030],"Alwar":[27.5530,76.6346],"Sikar":[27.6094,75.1397],
+  "Jhunjhunu":[28.1289,75.3988],"Jhunjhunun":[28.1289,75.3988],"Nagaur":[27.2029,73.7361],
+  "Pali":[25.7711,73.3234],"Barmer":[25.7521,71.3967],"Jaisalmer":[26.9157,70.9083],
+  "Sri Ganganagar":[29.9038,73.8771],"Sriganganagar":[29.9038,73.8771],
+  "Hanumangarh":[29.5827,74.3294],"Churu":[28.2940,74.9641],"Dholpur":[26.7085,77.8920],
+  "Karauli":[26.5072,77.0177],"Dausa":[26.8936,76.3339],"Tonk":[26.1699,75.7900],
+  "Bundi":[25.4416,75.6490],"Sawai Madhopur":[26.0157,76.3529],"Jhalawar":[24.5978,76.1608],
+  "Baran":[25.1037,76.5199],"Chittorgarh":[24.8887,74.6269],"Bhilwara":[25.3474,74.6313],
+  "Rajsamand":[25.0700,73.8800],"Dungarpur":[23.8447,73.7148],"Banswara":[23.5448,74.4402],
+  "Sirohi":[24.8881,72.8628],"Jalore":[25.3420,72.6140],"Jalor":[25.3420,72.6140],
+  "Pratapgarh":[24.0320,74.7800],
+  // Punjab
+  "Ludhiana":[30.9010,75.8573],"Amritsar":[31.6340,74.8723],"Jalandhar":[31.3260,75.5762],
+  "Patiala":[30.3398,76.3869],"Bathinda":[30.2110,74.9455],"Bhatinda":[30.2110,74.9455],
+  "Mohali":[30.7046,76.7179],"S.A.S. Nagar":[30.7046,76.7179],"Sahibzada Ajit Singh Nagar":[30.7046,76.7179],
+  "Gurdaspur":[32.0411,75.4032],"Hoshiarpur":[31.5143,75.9115],"Pathankot":[32.2643,75.6521],
+  "Ferozepur":[30.9236,74.6166],"Firozpur":[30.9236,74.6166],"Fazilka":[30.4016,74.0226],
+  "Faridkot":[30.6710,74.7553],"Muktsar":[30.4760,74.5153],"Sri Muktsar Sahib":[30.4760,74.5153],
+  "Moga":[30.8154,75.1726],"Barnala":[30.3770,75.5480],"Sangrur":[30.2440,75.8442],
+  "Fatehgarh Sahib":[30.6491,76.3887],"Rupnagar":[30.9643,76.5247],"Ropar":[30.9643,76.5247],
+  "Nawanshahr":[31.1259,76.1155],"Shaheed Bhagat Singh Nagar":[31.1259,76.1155],
+  "Kapurthala":[31.3797,75.3793],"Tarn Taran":[31.4527,74.9280],"Malerkotla":[30.5310,75.8780],
+  // Kerala
+  "Thiruvananthapuram":[8.5241,76.9366],"Trivandrum":[8.5241,76.9366],
+  "Kollam":[8.8932,76.6141],"Quilon":[8.8932,76.6141],
+  "Pathanamthitta":[9.2648,76.7870],"Alappuzha":[9.4981,76.3388],"Alleppey":[9.4981,76.3388],
+  "Kottayam":[9.5916,76.5222],"Idukki":[9.9189,77.1025],"Ernakulam":[9.9312,76.2673],
+  "Thrissur":[10.5276,76.2144],"Trichur":[10.5276,76.2144],"Palakkad":[10.7867,76.6548],
+  "Palakkad":[10.7867,76.6548],"Malappuram":[11.0510,76.0711],"Kozhikode":[11.2588,75.7804],
+  "Calicut":[11.2588,75.7804],"Wayanad":[11.6854,76.1320],"Kannur":[11.8745,75.3704],
+  "Cannanore":[11.8745,75.3704],"Kasaragod":[12.4996,74.9869],"Kasargod":[12.4996,74.9869],
+  // Bihar
+  "Patna":[25.5941,85.1376],"Gaya":[24.7955,84.9994],"Muzaffarpur":[26.1209,85.3910],
+  "Bhagalpur":[25.2425,86.9842],"Darbhanga":[26.1542,85.8918],"Purnia":[25.7771,87.4753],
+  "Purnea":[25.7771,87.4753],"Samastipur":[25.8594,85.7786],"Begusarai":[25.4182,86.1272],
+  "Munger":[25.3738,86.4736],"Monghyr":[25.3738,86.4736],"Rohtas":[24.9333,83.8000],
+  "Kaimur":[25.0470,83.5760],"Arwal":[25.2454,84.6820],"Jehanabad":[25.2131,84.9947],
+  "Nalanda":[25.0000,85.5000],"Sheikhpura":[25.1388,85.8505],"Lakhisarai":[25.1579,86.0936],
+  "Jamui":[24.9286,86.2264],"Banka":[24.8830,86.9181],"Nawada":[24.8874,85.5410],
+  "Sitamarhi":[26.5919,85.4869],"Sheohar":[26.5209,85.2990],"Madhubani":[26.3490,86.0708],
+  "Supaul":[26.1238,86.6043],"Araria":[26.1490,87.4710],"Kishanganj":[26.0946,87.9422],
+  "Katihar":[25.5378,87.5696],"Madhepura":[25.9247,86.7922],"Saharsa":[25.8774,86.5937],
+  "Khagaria":[25.5021,86.4699],"Gopalganj":[26.4678,84.4408],"Siwan":[26.2200,84.3560],
+  "Saran":[25.9098,84.8781],"Chapra":[25.7810,84.7374],"Vaishali":[25.7102,85.2150],
+  "East Champaran":[26.6477,84.9093],"Motihari":[26.6477,84.9093],
+  "West Champaran":[27.0857,84.3773],"Bettiah":[27.0857,84.3773],
+  "Buxar":[25.5644,83.9781],"Bhojpur":[25.5778,84.4494],"Ara":[25.5778,84.4494],
+  // Jharkhand
+  "Ranchi":[23.3441,85.3096],"Dhanbad":[23.7957,86.4304],"Jamshedpur":[22.8046,86.2029],
+  "East Singhbhum":[22.8046,86.2029],"Bokaro":[23.6693,86.1511],"Hazaribagh":[23.9924,85.3637],
+  "Deoghar":[24.4851,86.6951],"Giridih":[24.1887,86.2979],"Koderma":[24.4645,85.5970],
+  "Chatra":[24.2074,84.8733],"Latehar":[23.7480,84.5024],"Lohardaga":[23.4359,84.6856],
+  "Gumla":[23.0448,84.5415],"Simdega":[22.6149,84.5148],"Khunti":[23.0729,85.2778],
+  "Ramgarh":[23.6326,85.5128],"Seraikela Kharsawan":[22.5858,85.8936],
+  "West Singhbhum":[22.3295,85.3040],"Chaibasa":[22.3295,85.3040],
+  "Pakur":[24.6354,87.8432],"Godda":[24.8280,87.2145],"Sahibganj":[25.2432,87.6371],
+  "Jamtara":[23.9600,86.8100],"Dumka":[24.2675,87.2465],
+  // Madhya Pradesh
+  "Bhopal":[23.2599,77.4126],"Indore":[22.7196,75.8577],"Gwalior":[26.2183,78.1828],
+  "Jabalpur":[23.1815,79.9864],"Ujjain":[23.1765,75.7885],"Sagar":[23.8388,78.7378],
+  "Satna":[24.5738,80.8322],"Rewa":[24.5362,81.2980],"Ratlam":[23.3315,75.0367],
+  "Dewas":[22.9676,76.0534],"Chhindwara":[22.0574,78.9382],"Vidisha":[23.5251,77.8151],
+  "Shivpuri":[25.4227,77.6599],"Morena":[26.4972,77.9988],"Bhind":[26.5635,78.7881],
+  "Guna":[24.6472,77.3128],"Datia":[25.6667,78.4667],"Tikamgarh":[24.7440,78.8313],
+  "Chhatarpur":[24.9172,79.5867],"Panna":[24.7167,80.1833],"Damoh":[23.8329,79.4417],
+  "Katni":[23.8300,80.3900],"Umaria":[23.5220,80.8360],"Shahdol":[23.2950,81.3600],
+  "Anuppur":[23.1000,81.6900],"Dindori":[22.9500,81.0800],"Mandla":[22.5988,80.3762],
+  "Balaghat":[21.8133,80.1860],"Seoni":[22.0853,79.5396],"Narsinghpur":[22.9474,79.1929],
+  "Raisen":[23.3300,77.7900],"Sehore":[23.2005,77.0844],"Hoshangabad":[22.7467,77.7270],
+  "Narmadapuram":[22.7467,77.7270],"Harda":[22.3392,77.0889],"Betul":[21.9020,77.8980],
+  "Khandwa":[21.8257,76.3553],"East Nimar":[21.8257,76.3553],"Burhanpur":[21.3144,76.2289],
+  "Khargone":[21.8241,75.6114],"West Nimar":[21.8241,75.6114],"Barwani":[22.0344,74.8995],
+  "Alirajpur":[22.3020,74.3670],"Jhabua":[22.7660,74.5940],"Dhar":[22.6021,75.2994],
+  "Shajapur":[23.4270,76.2777],"Agar Malwa":[23.7100,76.0100],"Mandsaur":[24.0783,75.0699],
+  "Neemuch":[24.4752,74.8674],"Rajgarh":[24.0179,76.7289],"Singrauli":[24.2000,82.6700],
+  "Sidhi":[24.4167,81.8833],"Ashoknagar":[24.5785,77.7313],"Niwari":[25.0000,78.8000],
+  // Chhattisgarh
+  "Raipur":[21.2514,81.6296],"Durg":[21.1904,81.2849],"Raigarh":[21.8974,83.3950],
+  "Korba":[22.3595,82.7501],"Rajnandgaon":[20.9390,81.0334],"Surguja":[23.1180,83.1979],
+  "Ambikapur":[23.1180,83.1979],"Jashpur":[22.8849,84.1510],"Korea":[23.2200,82.5700],
+  "Baloda Bazar":[21.6554,82.1614],"Gariaband":[20.6314,82.0706],"Mahasamund":[21.1105,82.0955],
+  "Dhamtari":[20.7078,81.5489],"Balod":[20.7291,81.2069],"Bemetara":[21.7150,81.5310],
+  "Mungeli":[22.0627,81.6851],"Kabirdham":[22.0900,81.2600],"Kawardha":[22.0100,81.2300],
+  "Kondagaon":[19.5996,81.6653],"Kanker":[20.2716,81.4918],"Bastar":[19.1200,81.9700],
+  "Jagdalpur":[19.1200,81.9700],"Bijapur":[18.8285,80.8062],"Dantewada":[18.8961,81.3489],
+  "Sukma":[18.3880,81.6600],"Narayanpur":[19.6936,81.2363],"Bilaspur":[22.0796,82.1391],
+  // Assam
+  "Kamrup Metropolitan":[26.1445,91.7362],"Kamrup":[26.1700,91.3500],
+  "Sonitpur":[26.6000,92.7600],"Tezpur":[26.6000,92.7600],"Dibrugarh":[27.4728,94.9120],
+  "Jorhat":[26.7509,94.2037],"Nagaon":[26.3465,92.6865],"Cachar":[24.8084,92.7616],
+  "Silchar":[24.8084,92.7616],"Lakhimpur":[27.2350,94.1034],"North Lakhimpur":[27.2350,94.1034],
+  "Sivasagar":[26.9808,94.6363],"Sibsagar":[26.9808,94.6363],"Tinsukia":[27.4886,95.3596],
+  "Dhemaji":[27.4800,94.5600],"Majuli":[26.9500,94.1600],"Golaghat":[26.5133,93.9678],
+  "Karbi Anglong":[25.6600,93.4700],"Dima Hasao":[25.4700,93.0600],"Barpeta":[26.3233,91.0090],
+  "Morigaon":[26.2500,92.3400],"Darrang":[26.4700,92.0500],"Mangaldoi":[26.4700,92.0500],
+  "Udalguri":[26.7500,92.1000],"Baksa":[26.7000,91.1500],"Nalbari":[26.4437,91.4350],
+  "Bongaigaon":[26.4750,90.5580],"Chirang":[26.5700,90.6300],"Kokrajhar":[26.4003,90.2710],
+  "Dhubri":[26.0200,89.9800],"Goalpara":[26.1733,90.6244],"Hailakandi":[24.6827,92.5697],
+  "Karimganj":[24.8643,92.3553],"South Salmara Mankachar":[25.5700,89.8100],
+  "West Karbi Anglong":[25.9400,92.8000],"Bajali":[26.4000,91.1000],
+  // Himachal Pradesh
+  "Shimla":[31.1048,77.1734],"Mandi":[31.7080,76.9320],"Kangra":[32.0996,76.2691],
+  "Solan":[30.9045,77.0967],"Hamirpur":[31.6859,76.5216],"Una":[31.4700,76.2700],
+  "Bilaspur":[31.3360,76.7580],"Chamba":[32.5527,76.1258],"Kullu":[31.9579,77.1095],
+  "Kinnaur":[31.5900,78.4600],"Lahaul and Spiti":[32.5700,77.4700],"Sirmaur":[30.5655,77.4651],
+  // Uttarakhand
+  "Dehradun":[30.3165,78.0322],"Haridwar":[29.9457,78.1642],"Nainital":[29.3803,79.4636],
+  "Udham Singh Nagar":[28.9744,79.5185],"U.S. Nagar":[28.9744,79.5185],
+  "Almora":[29.5971,79.6609],"Pithoragarh":[29.5830,80.2176],"Chamoli":[30.4050,79.3200],
+  "Rudraprayag":[30.2842,78.9800],"Tehri Garhwal":[30.3922,78.4805],"Uttarkashi":[30.7268,78.4354],
+  "Pauri Garhwal":[30.1455,78.7775],"Champawat":[29.3356,80.0905],"Bageshwar":[29.8375,79.7697],
+  // Goa
+  "North Goa":[15.5135,73.9520],"South Goa":[15.1750,74.0260],
+  // NE States
+  "Imphal West":[24.8170,93.9368],"Imphal East":[24.8170,93.9968],
+  "East Khasi Hills":[25.5788,91.8933],"West Khasi Hills":[25.4500,91.0900],
+  "Kohima":[25.6751,94.1086],"Dimapur":[25.9043,93.7249],
+  "West Tripura":[23.8315,91.2868],"Gomati":[23.4553,91.5588],
+  "Aizawl":[23.7271,92.7176],"East Sikkim":[27.3314,88.6138],
+  "Papum Pare":[27.0844,93.6053],"Itanagar":[27.0844,93.6053],
+  // J&K / Ladakh
+  "Srinagar":[34.0837,74.7973],"Jammu":[32.7266,74.8570],"Leh":[34.1526,77.5771],
+  "Anantnag":[33.7311,75.1487],"Baramulla":[34.2026,74.3433],"Pulwama":[33.8743,74.8982],
+  "Kupwara":[34.5211,74.2544],"Kulgam":[33.6441,75.0190],"Shopian":[33.7148,74.8358],
+  "Ganderbal":[34.2282,74.7757],"Budgam":[34.0009,74.7183],"Bandipora":[34.4131,74.6451],
+  "Kathua":[32.3842,75.5172],"Samba":[32.5604,75.1176],"Udhampur":[32.9161,75.1413],
+  "Reasi":[33.0850,74.8333],"Rajouri":[33.3770,74.3142],"Poonch":[33.7723,74.0972],
+  "Doda":[33.1498,75.5493],"Kishtwar":[33.3132,75.7695],"Ramban":[33.2427,75.2327],
+  // Puducherry
+  "Puducherry":[11.9416,79.8083],"Pondicherry":[11.9416,79.8083],
+  "Karaikal":[10.9254,79.8380],"Mahe":[11.7010,75.5369],"Yanam":[16.7330,82.2133],
+};
+
+// ═══════════════════════════════════════════════════════
+// HAVERSINE
+// ═══════════════════════════════════════════════════════
+function haversine(la1,lo1,la2,lo2){
+  const R=6371,dl=(la2-la1)*Math.PI/180,dg=(lo2-lo1)*Math.PI/180;
+  const a=Math.sin(dl/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dg/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+// ═══════════════════════════════════════════════════════
+// CORE ENGINE — state-filtered nearest EC
+// ═══════════════════════════════════════════════════════
+function findNearestEC(lat, lng, state) {
+  // Get allowed groups for this state
+  const allowed = STATE_GROUP[state] || null;
+
+  // Filter ECs by state group
+  let candidates = EC;
+  if (allowed) {
+    // "standard" means all non-specialised ECs
+    const specialGroups = ["bangalore","mysore","tamilnadu","hyderabad","mumbai"];
+    candidates = EC.filter(e => {
+      if (allowed.includes(e.group)) return true;
+      if (allowed.includes("standard") && !specialGroups.includes(e.group)) return true;
+      // Allow specific EC codes listed in allowed
+      if (allowed.includes(e.code)) return true;
+      return false;
+    });
+    // Safety fallback: if no candidates found, use all ECs
+    if (candidates.length === 0) candidates = EC;
+  }
+
+  let best = null, bd = Infinity;
+  candidates.forEach(e => {
+    const d = haversine(lat, lng, e.lat, e.lng);
+    if (d < bd) { bd = d; best = e; }
+  });
+  return { ec: best, km: bd };
+}
+
+function evaluate(lat, lng, state) {
+  const { ec, km } = findNearestEC(lat, lng, state);
+  const g = ec.group;
+  if (g === 'bangalore') {
+    return km <= 100
+      ? {status:'ok',   note:`${km.toFixed(1)} km from EC — standard service.`, ec, km}
+      : {status:'extra',note:`${km.toFixed(1)} km from EC — serviceable with additional charges.`, ec, km};
+  }
+  if (g === 'mysore') {
+    return km <= 60
+      ? {status:'ok',   note:`${km.toFixed(1)} km from EC — standard service.`, ec, km}
+      : {status:'extra',note:`${km.toFixed(1)} km from EC — serviceable with additional charges.`, ec, km};
+  }
+  if (g === 'tamilnadu') {
+    return km <= 60
+      ? {status:'ok',   note:`${km.toFixed(1)} km from EC — standard service.`, ec, km}
+      : {status:'extra',note:`${km.toFixed(1)} km from EC — serviceable with additional charges across Tamil Nadu.`, ec, km};
+  }
+  if (g === 'hyderabad' || g === 'mumbai') {
+    return {status:'ok', note:'Confirmed serviceable.', ec, km};
+  }
+  const radius = ec.km || 40;
+  return km <= radius
+    ? {status:'ok', note:`${km.toFixed(1)} km from EC — within ${radius} km radius.`, ec, km}
+    : {status:'no', note:`${km.toFixed(1)} km from EC — exceeds ${radius} km serviceable radius.`, ec, km};
+}
+
+// ═══════════════════════════════════════════════════════
+// RESULT CARD
+// ═══════════════════════════════════════════════════════
+function ecCard(ec, km) {
+  const addr = ec.address || '';
+  const distRow = km != null
+    ? `<span class="rg-label">Distance</span><span class="rg-val">${km.toFixed(1)} km straight-line · ~${(km*1.3).toFixed(1)} km by road</span>`
+    : '';
+  return `<div class="result-grid">
+    <span class="rg-label">EC Name</span><span class="rg-val">${ec.name}</span>
+    <span class="rg-label">EC Code</span><span class="rg-val">${ec.code}</span>
+    <span class="rg-label">Manager</span><span class="rg-val">${ec.manager}</span>
+    <span class="rg-label">Region</span><span class="rg-val">${ec.region}</span>
+    ${addr ? `<span class="rg-label">Address</span><span class="rg-val">${addr}</span>` : ''}
+    ${distRow}
+  </div>`;
+}
+
+function renderSingle(pin, locName, res) {
+  const el = document.getElementById('pincodeResult');
+  const cfg = res.status === 'ok'
+    ? {cls:'serviceable',     icon:'✅', label:'Serviceable',                     badge:`<span class="ok-badge">SERVICEABLE</span>`}
+    : res.status === 'extra'
+    ? {cls:'extra-charges',   icon:'⚠️', label:'Serviceable – Additional Charges', badge:`<span class="charge-badge">ADDITIONAL CHARGES</span>`}
+    : {cls:'not-serviceable', icon:'❌', label:'Not Serviceable',                  badge:`<span class="no-badge">NOT SERVICEABLE</span>`};
+  el.className = `pincode-result ${cfg.cls}`;
+  el.style.display = 'block';
+  el.innerHTML = `
+    <div class="result-header">${cfg.icon} ${cfg.label} ${cfg.badge}</div>
+    <div style="margin-bottom:6px;color:#444;">Pincode <strong>${pin}</strong>${locName ? ` &nbsp;·&nbsp; ${locName}` : ''}</div>
+    <div style="font-size:11px;margin-bottom:8px;color:#666;">${res.note}</div>
+    ${ecCard(res.ec, res.km)}`;
+}
+
+function renderDual(pin, ec1, ec2) {
+  const el = document.getElementById('pincodeResult');
+  el.className = 'pincode-result serviceable';
+  el.style.display = 'block';
+  el.innerHTML = `
+    <div class="result-header">✅ Serviceable <span class="ok-badge">2 ECS ASSIGNED</span></div>
+    <div style="margin-bottom:10px;">Pincode <strong>${pin}</strong> — served by both Hyderabad ECs:</div>
+    <div style="background:#e8f5ec;border-radius:5px;padding:10px;margin-bottom:8px;">
+      <div style="font-size:11px;font-weight:700;color:#1a5c30;margin-bottom:6px;">● ${ec1.name}</div>${ecCard(ec1,null)}</div>
+    <div style="background:#fff8e8;border-radius:5px;padding:10px;">
+      <div style="font-size:11px;font-weight:700;color:#7a4f00;margin-bottom:6px;">● ${ec2.name}</div>${ecCard(ec2,null)}</div>`;
+}
+
+// ═══════════════════════════════════════════════════════
+// MAIN — 3-tier lookup
+// ═══════════════════════════════════════════════════════
+async function checkPincode() {
+  const pin = document.getElementById('pincodeInput').value.trim();
+  const el  = document.getElementById('pincodeResult');
+  const btn = document.getElementById('checkBtn');
+
+  if (!/^\d{6}$/.test(pin)) {
+    el.className = 'pincode-result extra-charges'; el.style.display = 'block';
+    el.innerHTML = '<div class="result-header">⚠️ Invalid Pincode</div><div>Please enter a valid 6-digit pincode.</div>';
+    return;
+  }
+
+  el.className = 'pincode-result loading'; el.style.display = 'block';
+  el.innerHTML = '<div class="result-header"><span class="spinner"></span>&nbsp; Checking serviceability…</div>';
+  btn.disabled = true;
+
+  // TIER 1 — Hyderabad pincode sheet
+  if (HYD[pin]) {
+    btn.disabled = false;
+    const code = HYD[pin];
+    if (code === 'BH/GB') {
+      renderDual(pin, EC_MAP['BHHYD'], EC_MAP['HDC']);
+    } else {
+      const ec = code === 'GB' ? EC_MAP['HDC'] : EC_MAP['BHHYD'];
+      renderSingle(pin, 'Hyderabad', {status:'ok', note:'Confirmed via Hyderabad pincode sheet.', ec, km:null});
+    }
+    return;
+  }
+
+  // TIER 2 — Mumbai pincode sheet
+  if (MUM[pin]) {
+    btn.disabled = false;
+    const code = MUM[pin];
+    const ec = code==='WLMUM' ? EC_MAP['WLMUM'] : code==='KHMUM' ? EC_MAP['KHMUM'] : EC_MAP['TDC'];
+    renderSingle(pin, 'Mumbai / Thane / Navi Mumbai', {status:'ok', note:'Confirmed via Mumbai pincode sheet.', ec, km:null});
+    return;
+  }
+
+  // TIER 3 — India Post API → state-filtered nearest EC
+  try {
+    const res  = await fetch(`https://api.postalpincode.in/pincode/${pin}`);
+    const json = await res.json();
+    btn.disabled = false;
+
+    if (!json || json[0].Status !== 'Success' || !json[0].PostOffice || json[0].PostOffice.length === 0) {
+      el.className = 'pincode-result extra-charges'; el.style.display = 'block';
+      el.innerHTML = `<div class="result-header">❓ Pincode Not Found</div>
+        <div>Pincode <strong>${pin}</strong> is not recognised. Please verify and try again.</div>`;
+      return;
+    }
+
+    const po       = json[0].PostOffice[0];
+    const district = (po.District || '').trim();
+    const state    = (po.State    || '').trim();
+    const locName  = [po.Name, district, state].filter(Boolean).join(', ');
+
+    // Get district coordinates (precise) or fall back to state EC group centroid
+    let lat, lng;
+    const dcKey = Object.keys(DC).find(k => k.toLowerCase() === district.toLowerCase());
+    if (dcKey) {
+      [lat, lng] = DC[dcKey];
+    } else {
+      // District not in our map — use the centroid of the nearest EC group for this state
+      // This guarantees state-correct assignment even without district coords
+      const grps = STATE_GROUP[state] || ["standard"];
+      const specialGroups = ["bangalore","mysore","tamilnadu","hyderabad","mumbai"];
+      const grpECs = EC.filter(e => {
+        if (grps.includes(e.group)) return true;
+        if (grps.includes("standard") && !specialGroups.includes(e.group)) return true;
+        return false;
+      });
+      if (grpECs.length > 0) {
+        lat = grpECs.reduce((s,e) => s+e.lat, 0) / grpECs.length;
+        lng = grpECs.reduce((s,e) => s+e.lng, 0) / grpECs.length;
+      } else {
+        lat = 20.5937; lng = 78.9629; // India centre last resort
+      }
+    }
+
+    const result   = evaluate(lat, lng, state);
+    renderSingle(pin, locName, result);
+
+  } catch(err) {
+    btn.disabled = false;
+    el.className = 'pincode-result extra-charges'; el.style.display = 'block';
+    el.innerHTML = `<div class="result-header">❓ Could Not Verify</div>
+      <div>Pincode <strong>${pin}</strong> could not be verified. Please check your internet connection and try again.</div>`;
+  }
+}
+
+document.getElementById('pincodeInput').addEventListener('keydown', e => { if (e.key === 'Enter') checkPincode(); });
+</script>
+</body>
+</html>
